@@ -1,88 +1,117 @@
-// alert('linked')
+// Check if there are todos stored in local storage
+var todos = JSON.parse(localStorage.getItem('todos')) || [];
 
-/* Creating the 'X' close symbol in each of the LI TAGS  */
-
-var myNodeItem = document.getElementsByTagName('li');
-
-var i;
-for (i = 0; i < myNodeItem.length; i++) {
-
-    var span = document.createElement('SPAN');
-    var txt = document.createTextNode('\u00D7');
-
-    span.className = 'close';
-    span.appendChild(txt);
-
-    myNodeItem[i].appendChild(span);
-
+// Function to save todos to local storage
+function saveTodos() {
+    localStorage.setItem('todos', JSON.stringify(todos));
 }
 
-/* Making the 'X' close symbol to be able to delete the LI TAGS Lists */
-
-var close = document.getElementsByClassName('close');
-
-var i;
-for (i = 0; i < close.length; i++) {
-
-    close[i].onclick = function () {
-
-        var div = this.parentElement;
-        div.style.display = 'none';
-
-    }
-
-}
-
-/* Adding a check mark and a strike through each of the 'LI' Tags*/
-
-var list = document.querySelector('ul');
-
-list.addEventListener('click',
-
-    function (e) {
-        if (e.target.tagName == 'LI') {
-            e.target.classList.toggle('checked');
-        }
-    },
-
-    false)
-
-/* Getting the input tag to display a message if we type a blank message */
-
+// Function to add a new todo
 function newElement() {
-
-    var li = document.createElement('li');
-
     var inputValue = document.getElementById('myinput').value;
 
-    var t = document.createTextNode(inputValue);
-
-    li.appendChild(t);
-
     if (inputValue === '') {
-        alert('Please write something about your task here...')
+        alert('Please write something about your task here...');
     } else {
+        var todo = {
+            text: inputValue,
+            completed: false,
+        };
+
+        todos.push(todo);
+        saveTodos();
+
+        var li = document.createElement('li');
+        var t = document.createTextNode(inputValue);
+
+        li.appendChild(t);
+
         document.getElementById('muUL').appendChild(li);
-    }
-    document.getElementById('myinput').value = '';
+        document.getElementById('myinput').value = '';
 
-    var span = document.createElement('SPAN');
-    var txt = document.createTextNode('\u00D7');
+        var span = document.createElement('SPAN');
+        var txt = document.createTextNode('\u00D7');
 
-    span.className = 'close';
-    span.appendChild(txt);
+        span.className = 'close';
+        span.appendChild(txt);
 
-    li.appendChild(span);
+        li.appendChild(span);
 
-    for (i = 0; i < close.length; i++) {
-
-        close[i].onclick = function () {
-
+        span.onclick = function () {
             var div = this.parentElement;
+            var todoText = div.textContent.trim();
             div.style.display = 'none';
 
+            // Remove the todo from the todos array
+            todos = todos.filter(function (todo) {
+                return todo.text !== todoText;
+            });
+
+            saveTodos(); // Update local storage
+        };
+    }
+}
+
+// Function to load todos from local storage and display them
+function loadTodos() {
+    var ul = document.getElementById('muUL');
+
+    todos.forEach(function (todo) {
+        var li = document.createElement('li');
+        var t = document.createTextNode(todo.text);
+
+        li.appendChild(t);
+
+        ul.appendChild(li);
+
+        if (todo.completed) {
+            li.classList.add('checked');
         }
 
-    }
+        var span = document.createElement('SPAN');
+        var txt = document.createTextNode('\u00D7');
 
+        span.className = 'close';
+        span.appendChild(txt);
+
+        li.appendChild(span);
+
+        span.onclick = function () {
+            var div = this.parentElement;
+            var todoText = div.textContent.trim();
+            div.style.display = 'none';
+
+            // Remove the todo from the todos array
+            todos = todos.filter(function (todo) {
+                return todo.text !== todoText;
+            });
+
+            saveTodos(); // Update local storage
+        };
+    });
 }
+
+// Load and display todos on page load
+loadTodos();
+
+// Event listener to mark a todo as completed
+var list = document.querySelector('ul');
+list.addEventListener(
+    'click',
+    function (e) {
+        if (e.target.tagName === 'LI') {
+            e.target.classList.toggle('checked');
+
+            // Update the completed status in the todos array and local storage
+            var todoText = e.target.textContent.trim();
+            todos.forEach(function (todo) {
+                if (todo.text === todoText) {
+                    todo.completed = !todo.completed;
+                }
+            });
+
+            saveTodos();
+        }
+    },
+    false
+);
